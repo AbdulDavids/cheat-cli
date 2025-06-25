@@ -119,20 +119,24 @@ if [ "$1" = "-i" ] || [ "$1" = "--interactive" ]; then
       /model*) 
         new_model=$(printf %s "$line" | awk '{print $2}')
         if [ -n "$new_model" ]; then
-          MODEL="$new_model"
-          printf "${GREEN}Switched model to ${YELLOW}%s${RESET}\n" "$MODEL"
+          case "$new_model" in
+            gpt-4.1-nano|gpt-4o-mini)
+              MODEL="$new_model"
+              printf "${GREEN}Switched model to ${YELLOW}%s${RESET}\n" "$MODEL"
+              ;;
+            *)
+              printf "${RED}Invalid model. Available models: ${YELLOW}gpt-4.1-nano, gpt-4o-mini${RESET}\n"
+              ;;
+          esac
         else
-          printf "${CYAN}Available models: ${YELLOW}gpt-4o, gpt-4o-mini, gpt-4-turbo, gpt-3.5-turbo, gpt-4.1-nano${RESET}\n"
-          printf "${CYAN}Usage: ${YELLOW}/model gpt-4o${RESET}\n"
+          printf "${CYAN}Available models: ${YELLOW}gpt-4.1-nano, gpt-4o-mini${RESET}\n"
+          printf "${CYAN}Usage: ${YELLOW}/model gpt-4o-mini${RESET}\n"
         fi
         continue ;;
       /models)
         printf "${CYAN}Available models:${RESET}\n"
-        printf "  ${YELLOW}gpt-4o${RESET} - Latest GPT-4 model\n"
+        printf "  ${YELLOW}gpt-4.1-nano${RESET} - Compact model (default)\n"
         printf "  ${YELLOW}gpt-4o-mini${RESET} - Faster, cheaper GPT-4\n"
-        printf "  ${YELLOW}gpt-4-turbo${RESET} - High performance GPT-4\n"
-        printf "  ${YELLOW}gpt-3.5-turbo${RESET} - Fast and efficient\n"
-        printf "  ${YELLOW}gpt-4.1-nano${RESET} - Compact model\n"
         printf "${CYAN}Switch with: ${YELLOW}/model MODEL_NAME${RESET}\n"
         continue ;;
       /help) 
@@ -171,19 +175,23 @@ else
         /model*) 
           new_model=$(printf %s "$line" | awk '{print $2}')
           if [ -n "$new_model" ]; then
-            MODEL="$new_model"
-            printf "${GREEN}Switched model to ${YELLOW}%s${RESET}\n" "$MODEL"
+            case "$new_model" in
+              gpt-4.1-nano|gpt-4o-mini)
+                MODEL="$new_model"
+                printf "${GREEN}Switched model to ${YELLOW}%s${RESET}\n" "$MODEL"
+                ;;
+              *)
+                printf "${RED}Invalid model. Available models: ${YELLOW}gpt-4.1-nano, gpt-4o-mini${RESET}\n"
+                ;;
+            esac
           else
-            printf "${CYAN}Available models: ${YELLOW}gpt-4o, gpt-4o-mini, gpt-4-turbo, gpt-3.5-turbo, gpt-4.1-nano${RESET}\n"
+            printf "${CYAN}Available models: ${YELLOW}gpt-4.1-nano, gpt-4o-mini${RESET}\n"
           fi
           continue ;;
         /models)
           printf "${CYAN}Available models:${RESET}\n"
-          printf "  ${YELLOW}gpt-4o${RESET} - Latest GPT-4 model\n"
+          printf "  ${YELLOW}gpt-4.1-nano${RESET} - Compact model (default)\n"
           printf "  ${YELLOW}gpt-4o-mini${RESET} - Faster, cheaper GPT-4\n"
-          printf "  ${YELLOW}gpt-4-turbo${RESET} - High performance GPT-4\n"
-          printf "  ${YELLOW}gpt-3.5-turbo${RESET} - Fast and efficient\n"
-          printf "  ${YELLOW}gpt-4.1-nano${RESET} - Compact model\n"
           continue ;;
         /help) 
           printf "${CYAN}Commands: ${YELLOW}/model MODEL${CYAN}, ${YELLOW}/models${CYAN}, blank line to exit${RESET}\n"

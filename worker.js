@@ -5,12 +5,8 @@
 
 // Supported OpenAI models
 const SUPPORTED_MODELS = [
-  'gpt-4o',
-  'gpt-4o-mini', 
-  'gpt-4-turbo',
-  'gpt-4',
-  'gpt-3.5-turbo',
-  'gpt-4.1-nano'
+  'gpt-4.1-nano',
+  'gpt-4o-mini'
 ];
 
 // CORS headers for browser requests
@@ -114,7 +110,7 @@ async function handlePost(request, pathname, env) {
   
   try {
     const requestData = await request.json();
-    const model = requestData.model || 'gpt-4o-mini';
+    const model = requestData.model || 'gpt-4.1-nano';
     const messages = requestData.messages || [];
     
     // Validate model
