@@ -94,24 +94,41 @@ call_openai() {
 if [ "$1" = "-i" ] || [ "$1" = "--interactive" ]; then
   printf "${BOLD}${CYAN}Chatting with ${YELLOW}%s${CYAN}. Blank line to quit.${RESET}\n" "$MODEL"
   
-  # Reconnect stdin to terminal when piped through curl
-  if [ ! -t 0 ]; then
-    exec < /dev/tty
-  fi
-  
-  while printf '\nyou> ' && IFS= read -r line; do
+  # Simple interactive loop that works with piped input
+  while true; do
+    printf '\nyou> '
+    
+    # Try to read from terminal directly
+    if command -v read >/dev/null 2>&1; then
+      if read -r line < /dev/tty 2>/dev/null; then
+        : # Successfully read from terminal
+      else
+        # Fallback: try regular read
+        read -r line || break
+      fi
+    else
+      # No read command, try alternative
+      line=$(head -n1 < /dev/tty 2>/dev/null || head -n1)
+    fi
+    
+    # Exit on empty line
     [ -z "$line" ] && break
-    # quick switch: /model gpt-4o-mini
+    
+    # Handle commands
     case "$line" in
       /model*) MODEL=$(printf %s "$line" | awk '{print $2}'); printf "${GREEN}Switched model to ${YELLOW}%s${RESET}\n" "$MODEL"; continue ;;
       /help) printf "${CYAN}Commands: ${YELLOW}/model MODELNAME${CYAN}, blank line to exit${RESET}\n"; continue ;;
+      /quit|/exit) break ;;
     esac
+    
     printf '\n%s> ' "$MODEL"
     call_openai "$line"
   done
   printf "${CYAN}Bye.${RESET}\n"
   exit 0
 fi
+
+# Remove the -i-local handler since we're not using that approach anymore
 # ---------------------------------------------------------------------------
 
 # batch mode (args or stdin) or default to interactive
