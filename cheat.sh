@@ -116,8 +116,33 @@ if [ "$1" = "-i" ] || [ "$1" = "--interactive" ]; then
     
     # Handle commands
     case "$line" in
-      /model*) MODEL=$(printf %s "$line" | awk '{print $2}'); printf "${GREEN}Switched model to ${YELLOW}%s${RESET}\n" "$MODEL"; continue ;;
-      /help) printf "${CYAN}Commands: ${YELLOW}/model MODELNAME${CYAN}, blank line to exit${RESET}\n"; continue ;;
+      /model*) 
+        new_model=$(printf %s "$line" | awk '{print $2}')
+        if [ -n "$new_model" ]; then
+          MODEL="$new_model"
+          printf "${GREEN}Switched model to ${YELLOW}%s${RESET}\n" "$MODEL"
+        else
+          printf "${CYAN}Available models: ${YELLOW}gpt-4o, gpt-4o-mini, gpt-4-turbo, gpt-3.5-turbo, gpt-4.1-nano${RESET}\n"
+          printf "${CYAN}Usage: ${YELLOW}/model gpt-4o${RESET}\n"
+        fi
+        continue ;;
+      /models)
+        printf "${CYAN}Available models:${RESET}\n"
+        printf "  ${YELLOW}gpt-4o${RESET} - Latest GPT-4 model\n"
+        printf "  ${YELLOW}gpt-4o-mini${RESET} - Faster, cheaper GPT-4\n"
+        printf "  ${YELLOW}gpt-4-turbo${RESET} - High performance GPT-4\n"
+        printf "  ${YELLOW}gpt-3.5-turbo${RESET} - Fast and efficient\n"
+        printf "  ${YELLOW}gpt-4.1-nano${RESET} - Compact model\n"
+        printf "${CYAN}Switch with: ${YELLOW}/model MODEL_NAME${RESET}\n"
+        continue ;;
+      /help) 
+        printf "${CYAN}Commands:${RESET}\n"
+        printf "  ${YELLOW}/model MODEL_NAME${CYAN} - Switch to a different model${RESET}\n"
+        printf "  ${YELLOW}/models${CYAN} - List available models${RESET}\n"
+        printf "  ${YELLOW}/help${CYAN} - Show this help${RESET}\n"
+        printf "  ${YELLOW}/quit${CYAN} or ${YELLOW}/exit${CYAN} - Exit chat${RESET}\n"
+        printf "  ${CYAN}Empty line - Exit chat${RESET}\n"
+        continue ;;
       /quit|/exit) break ;;
     esac
     
@@ -143,8 +168,26 @@ else
       [ -z "$line" ] && break
       # quick switch: /model gpt-4o-mini
       case "$line" in
-        /model*) MODEL=$(printf %s "$line" | awk '{print $2}'); printf "${GREEN}Switched model to ${YELLOW}%s${RESET}\n" "$MODEL"; continue ;;
-        /help) printf "${CYAN}Commands: ${YELLOW}/model MODELNAME${CYAN}, blank line to exit${RESET}\n"; continue ;;
+        /model*) 
+          new_model=$(printf %s "$line" | awk '{print $2}')
+          if [ -n "$new_model" ]; then
+            MODEL="$new_model"
+            printf "${GREEN}Switched model to ${YELLOW}%s${RESET}\n" "$MODEL"
+          else
+            printf "${CYAN}Available models: ${YELLOW}gpt-4o, gpt-4o-mini, gpt-4-turbo, gpt-3.5-turbo, gpt-4.1-nano${RESET}\n"
+          fi
+          continue ;;
+        /models)
+          printf "${CYAN}Available models:${RESET}\n"
+          printf "  ${YELLOW}gpt-4o${RESET} - Latest GPT-4 model\n"
+          printf "  ${YELLOW}gpt-4o-mini${RESET} - Faster, cheaper GPT-4\n"
+          printf "  ${YELLOW}gpt-4-turbo${RESET} - High performance GPT-4\n"
+          printf "  ${YELLOW}gpt-3.5-turbo${RESET} - Fast and efficient\n"
+          printf "  ${YELLOW}gpt-4.1-nano${RESET} - Compact model\n"
+          continue ;;
+        /help) 
+          printf "${CYAN}Commands: ${YELLOW}/model MODEL${CYAN}, ${YELLOW}/models${CYAN}, blank line to exit${RESET}\n"
+          continue ;;
       esac
       printf '\n%s> ' "$MODEL"
       call_openai "$line"

@@ -3,6 +3,16 @@
  * Provides the same functionality as main.py but runs on Cloudflare's edge
  */
 
+// Supported OpenAI models
+const SUPPORTED_MODELS = [
+  'gpt-4o',
+  'gpt-4o-mini', 
+  'gpt-4-turbo',
+  'gpt-4',
+  'gpt-3.5-turbo',
+  'gpt-4.1-nano'
+];
+
 // CORS headers for browser requests
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -73,6 +83,21 @@ async function handleGet(pathname) {
     });
   }
   
+  if (pathname === '/models') {
+    const response = { 
+      models: SUPPORTED_MODELS.map(model => ({
+        id: model,
+        name: model
+      }))
+    };
+    return new Response(JSON.stringify(response), {
+      headers: { 
+        'Content-Type': 'application/json',
+        ...corsHeaders 
+      }
+    });
+  }
+  
   return new Response('Not Found', { 
     status: 404,
     headers: corsHeaders
@@ -91,6 +116,15 @@ async function handlePost(request, pathname, env) {
     const requestData = await request.json();
     const model = requestData.model || 'gpt-4o-mini';
     const messages = requestData.messages || [];
+    
+    // Validate model
+    if (!SUPPORTED_MODELS.includes(model)) {
+      console.log(`Unsupported model requested: ${model}`);
+      return new Response(`Unsupported model: ${model}. Supported models: ${SUPPORTED_MODELS.join(', ')}`, { 
+        status: 400,
+        headers: corsHeaders
+      });
+    }
     
     // Extract user message for logging
     const userMessage = messages.length > 0 ? messages[messages.length - 1]?.content || '' : '';
