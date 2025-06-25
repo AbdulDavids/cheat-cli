@@ -1,0 +1,18 @@
+name = "cheat-cli-api"
+main = "worker.js"
+compatibility_date = "2023-12-01"
+
+# Environment variables (set these in Cloudflare dashboard or via wrangler secret)
+# [vars]
+# OPENAI_API_KEY = "your-key-here"  # Don't put real keys in this file!
+
+# Use wrangler secret put OPENAI_API_KEY to set this securely
+
+[build]
+command = ""
+
+[env.production]
+name = "cheat-cli-api"
+
+[env.staging]
+name = "cheat-cli-api-staging"

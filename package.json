@@ -1,0 +1,23 @@
+{
+  "name": "cheat-cli-worker",
+  "version": "1.0.0",
+  "description": "Cloudflare Worker for OpenAI Chat API Proxy",
+  "main": "worker.js",
+  "scripts": {
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy",
+    "deploy:staging": "wrangler deploy --env staging",
+    "tail": "wrangler tail"
+  },
+  "devDependencies": {
+    "wrangler": "^3.0.0"
+  },
+  "keywords": [
+    "cloudflare-workers",
+    "openai",
+    "api-proxy",
+    "chat"
+  ],
+  "author": "",
+  "license": "MIT"
+}
