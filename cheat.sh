@@ -93,6 +93,12 @@ call_openai() {
 # --- interactive UI ---------------------------------------------------------
 if [ "$1" = "-i" ] || [ "$1" = "--interactive" ]; then
   printf "${BOLD}${CYAN}Chatting with ${YELLOW}%s${CYAN}. Blank line to quit.${RESET}\n" "$MODEL"
+  
+  # Reconnect stdin to terminal when piped through curl
+  if [ ! -t 0 ]; then
+    exec < /dev/tty
+  fi
+  
   while printf '\nyou> ' && IFS= read -r line; do
     [ -z "$line" ] && break
     # quick switch: /model gpt-4o-mini
