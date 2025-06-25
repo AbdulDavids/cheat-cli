@@ -153,17 +153,6 @@ For typical chat usage:
 - CORS headers included for browser compatibility
 - No server infrastructure to secure
 
-## Migration from Python Server
-
-The Worker provides the same API as `main.py`:
-
-1. Deploy the Worker
-2. Update `API_URL` in your environment
-3. Stop the local Python server
-4. Test: `./cheat.sh "Migration successful!"`
-
-Your existing `cheat.sh` script works without changes!
-
 ## Support
 
 - [Cloudflare Workers Docs](https://developers.cloudflare.com/workers/)
