@@ -2,10 +2,10 @@
 
 A minimal OpenAI chat client that works from your terminal. Zero setup required. Built for those annoying machines in the lab that have almost everything blacklisted.
 
-<figure class="video_container">
-  <iframe src="assets/showcase.mp4" frameborder="0" allowfullscreen="true"> 
-</iframe>
-</figure>
+
+
+https://github.com/user-attachments/assets/b5fab1d7-3ac7-4d7e-bfe0-45b57dad948d
+
 
 ## Quick Start
 
