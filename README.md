@@ -47,7 +47,8 @@ cheat -i  # Interactive mode
 
 ### Windows Users (PowerShell)
 
->[!NOTE] Fine I made a PowerShell version too, because I know some of you are stuck on Windows and PowerShell is the only thing you have.
+>[!NOTE]
+> Fine I made a PowerShell version too, because I know some of you are stuck on Windows and PowerShell is the only thing you have.
 
 **Single question:**
 
