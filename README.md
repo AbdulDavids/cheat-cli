@@ -51,16 +51,20 @@ If you're unlucky enough to be on Windows, you can use WSL (Windows Subsystem fo
 cheat "What's the difference between Docker and VM?"
 ```
 
+**Model Switching**:
+
 ```bash
 # Interactive chat
 cheat -i
 you> hello
 gpt-4.1-nano> Hello! How can I assist you today?
-you> /model gpt-4o
+you> /model gpt-4o-mini
 you> explain REST APIs
-gpt-4o> REST APIs are...
-
+gpt-4o-mini> REST APIs are...
 ```
+
+![Cleanshot of curl in Warp 000797@2x](https://github.com/user-attachments/assets/de077428-7b9b-48e4-ac28-7f36ac6b66f0)
+
 
 You can also use the `cheat` command in a pipe, so you can push in some text from a  file or another command:
 
