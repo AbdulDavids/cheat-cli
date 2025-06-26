@@ -63,6 +63,14 @@ You can also use the `cheat` command in a pipe, so you can push in some text fro
 echo "Explain machine learning" | cheat
 ```
 
+Limited file context is supported, so you can use it like this:
+
+```bash
+# Use a file as context
+you> /context myfile.txt what is in this file?
+gpt-4.1-nano> The file contains a lot of memes.
+```
+
 
 
 Want to deploy your own? See [CLOUDFLARE.md](CLOUDFLARE.md) for deployment instructions.
