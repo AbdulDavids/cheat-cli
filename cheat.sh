@@ -18,8 +18,6 @@ set -e
 
 die() { echo "$*" >&2; exit 1; }
 
-[ -z "$OPENAI_API_KEY" ] && die "OPENAI_API_KEY not set, sort it out."
-
 MODEL=${MODEL:-gpt-4.1-nano}
 USE_JQ=${JQ:-1}
 API_URL=${API_URL:-https://cheat-cli-api.abdulbaaridavids04.workers.dev}
