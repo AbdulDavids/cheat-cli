@@ -55,14 +55,18 @@ call_openai() {
     thinking_shown=true
   fi
   
-  # Call API and get complete response
+  # Simple approach: escape the content for JSON and build the payload directly
+  escaped_prompt=$(printf %s "$prompt" | \
+    sed 's/\\/\\\\/g' | \
+    sed 's/"/\\"/g' | \
+    sed 's/	/\\t/g' | \
+    awk '{printf "%s\\n", $0}' | \
+    sed 's/\\n$//')
+  
+  # Call API with properly escaped JSON
   response=$(curl -sS "$API_URL/chat" \
     -H "Content-Type: application/json" \
-    -d '{
-      "model": "'"$MODEL"'",
-      "messages": [{"role": "user", "content": "'"$(printf %s "$prompt" | sed 's/"/\\"/g')"'"}],
-      "stream": false
-    }')
+    -d "{\"model\":\"$MODEL\",\"messages\":[{\"role\":\"user\",\"content\":\"$escaped_prompt\"}],\"stream\":false}")
   
   # Clear thinking placeholder and show model prompt
   if [ "$thinking_shown" = true ]; then
@@ -143,9 +147,89 @@ if [ "$1" = "-i" ] || [ "$1" = "--interactive" ]; then
         printf "${CYAN}Commands:${RESET}\n"
         printf "  ${YELLOW}/model MODEL_NAME${CYAN} - Switch to a different model${RESET}\n"
         printf "  ${YELLOW}/models${CYAN} - List available models${RESET}\n"
+        printf "  ${YELLOW}/context FILE [question]${CYAN} - Read and send file content with optional question${RESET}\n"
+        printf "  ${YELLOW}/context <command [question]${CYAN} - Read and send command output with optional question${RESET}\n"
         printf "  ${YELLOW}/help${CYAN} - Show this help${RESET}\n"
         printf "  ${YELLOW}/quit${CYAN} or ${YELLOW}/exit${CYAN} - Exit chat${RESET}\n"
         printf "  ${CYAN}Empty line - Exit chat${RESET}\n"
+        continue ;;
+      /context*)
+        context_args=$(printf %s "$line" | cut -d' ' -f2-)
+        if [ -n "$context_args" ]; then
+          # Parse first argument as file/command, rest as prompt
+          first_arg=$(printf %s "$context_args" | awk '{print $1}')
+          rest_args=$(printf %s "$context_args" | cut -d' ' -f2-)
+          
+          # Check if it starts with < for command execution
+          if printf %s "$first_arg" | grep -q "^<"; then
+            # Remove the < and execute the command
+            command_to_run=$(printf %s "$first_arg" | sed 's/^<//')
+            printf "${CYAN}Executing: ${YELLOW}%s${RESET}\n" "$command_to_run"
+            context_content=$(eval "$command_to_run" 2>/dev/null) || {
+              printf "${RED}Error executing command: %s${RESET}\n" "$command_to_run"
+              continue
+            }
+          else
+            # Treat as file path
+            if [ -f "$first_arg" ]; then
+              printf "${CYAN}Reading file: ${YELLOW}%s${RESET}\n" "$first_arg"
+              context_content=$(cat "$first_arg" 2>/dev/null) || {
+                printf "${RED}Error reading file: %s${RESET}\n" "$first_arg"
+                continue
+              }
+            else
+              printf "${RED}File not found: %s${RESET}\n" "$first_arg"
+              continue
+            fi
+          fi
+          
+          # Show preview of content
+          content_preview=$(printf %s "$context_content" | head -c 100)
+          if [ ${#context_content} -gt 100 ]; then
+            content_preview="${content_preview}..."
+          fi
+          printf "${GRAY}Content preview: %s${RESET}\n" "$content_preview"
+          
+          # Combine context content with additional prompt if provided
+          if [ -n "$rest_args" ] && [ "$rest_args" != "$first_arg" ]; then
+            if printf %s "$first_arg" | grep -q "^<"; then
+              # Command execution
+              full_prompt="Here is the output from running the command '$command_to_run':
+
+$context_content
+
+$rest_args"
+            else
+              # File content
+              full_prompt="Here is the content of the file '$first_arg':
+
+$context_content
+
+$rest_args"
+            fi
+          else
+            if printf %s "$first_arg" | grep -q "^<"; then
+              # Command execution without question
+              full_prompt="Here is the output from running the command '$command_to_run':
+
+$context_content"
+            else
+              # File content without question
+              full_prompt="Here is the content of the file '$first_arg':
+
+$context_content"
+            fi
+          fi
+          
+          printf '\n%s> ' "$MODEL"
+          call_openai "$full_prompt"
+        else
+          printf "${CYAN}Usage:${RESET}\n"
+          printf "  ${YELLOW}/context filename.txt${CYAN} - Send file content${RESET}\n"
+          printf "  ${YELLOW}/context filename.txt what does this say?${CYAN} - Send file with question${RESET}\n"
+          printf "  ${YELLOW}/context <cat file.txt${CYAN} - Send command output${RESET}\n"
+          printf "  ${YELLOW}/context <ls -la explain this${CYAN} - Send command output with question${RESET}\n"
+        fi
         continue ;;
       /quit|/exit) break ;;
     esac
@@ -194,7 +278,120 @@ else
           printf "  ${YELLOW}gpt-4o-mini${RESET} - Faster, cheaper GPT-4\n"
           continue ;;
         /help) 
-          printf "${CYAN}Commands: ${YELLOW}/model MODEL${CYAN}, ${YELLOW}/models${CYAN}, blank line to exit${RESET}\n"
+          printf "${CYAN}Commands: ${YELLOW}/model MODEL${CYAN}, ${YELLOW}/models${CYAN}, ${YELLOW}/context FILE [question]${CYAN}, blank line to exit${RESET}\n"
+          continue ;;
+        /context*)
+          context_args=$(printf %s "$line" | cut -d' ' -f2-)
+          if [ -n "$context_args" ]; then
+            # Parse first argument as file/command, rest as prompt
+            first_arg=$(printf %s "$context_args" | awk '{print $1}')
+            rest_args=$(printf %s "$context_args" | cut -d' ' -f2-)
+            
+            # Check if it starts with < for command execution
+            if printf %s "$first_arg" | grep -q "^<"; then
+              # Remove the < and execute the command
+              command_to_run=$(printf %s "$first_arg" | sed 's/^<//')
+              printf "${CYAN}Executing: ${YELLOW}%s${RESET}\n" "$command_to_run"
+              context_content=$(eval "$command_to_run" 2>/dev/null) || {
+                printf "${RED}Error executing command: %s${RESET}\n" "$command_to_run"
+                continue
+              }
+            else
+              # Treat as file path
+              if [ -f "$first_arg" ]; then
+                printf "${CYAN}Reading file: ${YELLOW}%s${RESET}\n" "$first_arg"
+                context_content=$(cat "$first_arg" 2>/dev/null) || {
+                  printf "${RED}Error reading file: %s${RESET}\n" "$first_arg"
+                  continue
+                }
+              else
+                printf "${RED}File not found: %s${RESET}\n" "$first_arg"
+                continue
+              fi
+            fi
+            
+            # Show preview of content
+            content_preview=$(printf %s "$context_content" | head -c 100)
+            if [ ${#context_content} -gt 100 ]; then
+              content_preview="${content_preview}..."
+            fi
+            printf "${GRAY}Content preview: %s${RESET}\n" "$content_preview"
+            
+            # Combine context content with additional prompt if provided
+            if [ -n "$rest_args" ] && [ "$rest_args" != "$first_arg" ]; then
+              if printf %s "$first_arg" | grep -q "^<"; then
+                # Command execution
+                full_prompt="Here is the output from running the command '$command_to_run':
+
+$context_content
+
+$rest_args"
+              else
+                # File content
+                full_prompt="Here is the content of the file '$first_arg':
+
+$context_content
+
+$rest_args"
+              fi
+            else
+              if printf %s "$first_arg" | grep -q "^<"; then
+                # Command execution without question
+                full_prompt="Here is the output from running the command '$command_to_run':
+
+$context_content"
+              else
+                # File content without question
+                full_prompt="Here is the content of the file '$first_arg':
+
+$context_content"
+              fi
+            fi
+            
+            printf '\n%s> ' "$MODEL"
+            call_openai "$full_prompt"
+          else
+            printf "${CYAN}Usage: ${YELLOW}/context filename.txt [question]${CYAN} or ${YELLOW}/context <command [question]${RESET}\n"
+          fi
+          continue ;;
+        /pipe*)
+          pipe_input=$(printf %s "$line" | cut -d' ' -f2-)
+          if [ -n "$pipe_input" ]; then
+            # Check if it starts with < for command execution
+            if printf %s "$pipe_input" | grep -q "^<"; then
+              # Remove the < and execute the command
+              command_to_run=$(printf %s "$pipe_input" | sed 's/^<//')
+              printf "${CYAN}Executing: ${YELLOW}%s${RESET}\n" "$command_to_run"
+              piped_content=$(eval "$command_to_run" 2>/dev/null) || {
+                printf "${RED}Error executing command: %s${RESET}\n" "$command_to_run"
+                continue
+              }
+            else
+              # Treat as file path
+              if [ -f "$pipe_input" ]; then
+                printf "${CYAN}Reading file: ${YELLOW}%s${RESET}\n" "$pipe_input"
+                piped_content=$(cat "$pipe_input" 2>/dev/null) || {
+                  printf "${RED}Error reading file: %s${RESET}\n" "$pipe_input"
+                  continue
+                }
+              else
+                printf "${RED}File not found: %s${RESET}\n" "$pipe_input"
+                continue
+              fi
+            fi
+            
+            # Show preview of content
+            content_preview=$(printf %s "$piped_content" | head -c 100)
+            if [ ${#piped_content} -gt 100 ]; then
+              content_preview="${content_preview}..."
+            fi
+            printf "${GRAY}Content preview: %s${RESET}\n" "$content_preview"
+            
+            printf '\n%s> ' "$MODEL"
+            call_openai "$piped_content"
+          else
+            printf "${CYAN}Usage: ${YELLOW}/pipe filename.txt${CYAN} or ${YELLOW}/pipe <command${RESET}\n"
+          fi
           continue ;;
       esac
       printf '\n%s> ' "$MODEL"
