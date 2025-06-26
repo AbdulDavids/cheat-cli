@@ -45,9 +45,54 @@ cheat "Explain quantum computing"
 cheat -i  # Interactive mode
 ```
 
-### Windows Users
+### Windows Users (PowerShell)
 
-If you're unlucky enough to be on Windows, you can use WSL (Windows Subsystem for Linux) or Git Bash to run the above commands.
+>[!NOTE] Fine I made a PowerShell version too, because I know some of you are stuck on Windows and PowerShell is the only thing you have.
+
+**Single question:**
+
+```powershell
+Invoke-RestMethod https://raw.githubusercontent.com/AbdulDavids/cheat-cli/main/cheat.ps1 | Invoke-Expression; cheat "What is Docker?"
+```
+
+**Interactive mode:**
+
+```powershell
+# Download and run interactively
+Invoke-RestMethod https://raw.githubusercontent.com/AbdulDavids/cheat-cli/main/cheat.ps1 | Out-File cheat.ps1; .\cheat.ps1 -i
+```
+
+**Create a PowerShell function for convenience:**
+
+```powershell
+# Add to your PowerShell profile ($PROFILE)
+function cheat {
+    param([Parameter(ValueFromRemainingArguments=$true)][string[]]$args)
+    $script = Invoke-RestMethod https://raw.githubusercontent.com/AbdulDavids/cheat-cli/main/cheat.ps1
+    $tempFile = [System.IO.Path]::GetTempFileName() + ".ps1"
+    $script | Out-File $tempFile
+    try { & $tempFile @args } finally { Remove-Item $tempFile -ErrorAction SilentlyContinue }
+}
+```
+
+Then use it like:
+
+```powershell
+cheat "Explain quantum computing"
+cheat -i  # Interactive mode
+```
+
+**Alternative: Download locally and run**
+
+```powershell
+# Download once
+Invoke-WebRequest https://raw.githubusercontent.com/AbdulDavids/cheat-cli/main/cheat.ps1 -OutFile cheat.ps1
+
+# Then use
+.\cheat.ps1 "What is PowerShell?"
+.\cheat.ps1 -Interactive
+```
+
 
 ## Usage Examples
 
@@ -84,6 +129,33 @@ Limited file context is supported, so you can use it like this:
 # Use a file as context
 you> /context myfile.txt what is in this file?
 gpt-4.1-nano> The file contains a lot of memes.
+```
+
+### PowerShell-Specific Examples
+
+```powershell
+# Quick questions
+.\cheat.ps1 "What's the difference between PowerShell and CMD?"
+
+# Pipe input
+"Explain PowerShell objects" | .\cheat.ps1
+
+# Interactive chat with PowerShell commands
+.\cheat.ps1 -i
+you> hello
+gpt-4.1-nano> Hello! How can I assist you today?
+you> /model gpt-4o-mini
+Switched model to gpt-4o-mini
+you> /context <Get-Process explain what these processes are
+Executing: Get-Process
+Content preview: Handles  NPM(K)    PM(K)      WS(K)     CPU(s)     Id  SI ProcessName...
+gpt-4o-mini> These are the currently running processes on your system...
+
+# Use file context
+you> /context package.json what dependencies does this have?
+Reading file: package.json
+Content preview: {"name": "my-app", "dependencies": {...
+gpt-4o-mini> This package.json file contains several dependencies...
 ```
 
 
