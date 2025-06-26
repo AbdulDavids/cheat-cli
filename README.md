@@ -6,15 +6,21 @@ A minimal OpenAI chat client that works from your terminal. Zero setup required.
 
 **Run directly from URL:**
 
+**Single question:**
+
 ```bash
-# Ask a question
 curl -s https://raw.githubusercontent.com/AbdulDavids/cheat-cli/main/cheat.sh | sh -s -- "What is Docker?"
 ```
+
+**Very cool interactive mode thing:**
 
 ```bash
 # Interactive mode
 curl -s https://raw.githubusercontent.com/AbdulDavids/cheat-cli/main/cheat.sh | sh -s -- -i
 ```
+
+![Interactive mode](https://github.com/user-attachments/assets/3e4003ae-0452-4190-8413-dc3a8f97be26)
+
 
 **Or create an alias for convenience (obviously dont use this if you are using a shared machine):**
 
